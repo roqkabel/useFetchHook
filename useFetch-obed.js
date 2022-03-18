@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useState } from 'react'
  * 
  * @param {string} apiUrl - The request URL.
  * @param  callback - A callback that is called on a successful response.
- * @returns {string}  { data , error , setUrl, setData }
+ * @returns {object}  { data , error , setUrl, setData }
  */
 
 
