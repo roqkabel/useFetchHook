@@ -1,82 +1,72 @@
-import axios from 'axios'
-import React, { useCallback, useEffect, useState } from 'react'
+import axios from "axios";
+import React, { useCallback, useEffect, useState } from "react";
 
 /**
- * 
+ *
  * @param {string} apiUrl - The request URL.
  * @param  callback - A callback that is called on a successful response.
- * @returns {object}  { data , error , setUrl, setData }
+ * @returns {object}  { response , error , setUrl, setData }
  */
 
 
-/* 
- ======= EXAMPLE USAGE ====
- 
-    const{
-        data, 
-        error,
-        setUrl
-        } = useFetch('https://murmuring-peak-71788.herokuapp.com/api/products', 
-                (res) => console.log('CALLBACK_FUNC', res))
-*/
+export default function useFetch(URL, callback) {
+  const [url, setUrl] = useState(URL);
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState(null);
+  const [isFetching, setIsFetching] = useState(false);
+  const controller = new AbortController();
 
+  useEffect(() => {
+    // do nothing when url is  NULL.
+    if (!url) {
+      return false;
+    }
 
-export default function useFetch(apiUrl, callback) {
+    // Perfrom api request.
+    setIsFetching(true);
+    axios
+      .get(url, {
+        signal: controller.signal,
+      })
+      .then((res) => {
+        setResponse(res.data);
+        callback(res.data);
+        setIsFetching(false);
+      })
+      .catch((err) => {
+        setIsFetching(false);
+        setError(err);
+      });
 
-    const [url, setUrl] = useState(apiUrl)
-    const [data, setData] = useState(null)
-    const [error, setError] = useState(null)
-    const controller = new AbortController();
+    return () => {
 
+      // Using Abort signal to cancel request and stop fetching data when unmounted.
+      controller.abort();
 
-    useEffect(() => {
-        setUrl(apiUrl)
-      return () => {
-        setUrl('')
+      // set default state when unmounted
+      setResponse(null);
+      setError(null);
+      setIsFetching(false);
+    };
+  }, [url]);
+
+  const setData = useCallback(
+    (data) => {
+      // Check if theres is a request processing, before setting data.
+      if (!isFetching) {
+        setResponse(data);
       }
-    }, [apiUrl])
-    
+    },
+    [isFetching]
+  );
 
- 
-    
-
-
-    useEffect(() => {
-        if(!!url){
-            handleFetchRequest()
-        }
-        return () => {
-            // cancel api request when unmounted.
-            controller.abort()
-
-            // set defaul state when unmounted
-            setData(null)
-            setError(null)
-        }
-    }, [url])
-
-    // peform api request.
-    const handleFetchRequest = () => {
-        axios.get(url, {
-            signal: controller.signal
-        }).then(res => {
-            setData(res.data)
-            callback(res)
-        }).catch(err => {
-            setError(err)
-        })
-    }
-
-    useCallback(handleFetchRequest, [url])
-
-
-
-    return {
-        data,
-        error,
-        setUrl,
-        setData
-    }
+  return {
+    response,
+    error,
+    setUrl,
+    setData,
+  };
 }
+
 
 
