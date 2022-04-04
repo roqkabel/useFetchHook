@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 
 /**
  *
- * @param {string} apiUrl - The request URL.
+ * @param {string} URL - The request URL.
  * @param  callback - A callback that is called on a successful response.
  * @returns {object}  { response , error , setUrl, setData }
  */
